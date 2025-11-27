@@ -6,10 +6,10 @@ entity datapath is
 port(
 
 	x_in , y_in , z_in: in signed(8 downto 0);
-	clock, mode, is_input, is_x_fnal, reset_i, enable_contador, enable_entradas, enable_saidas: in std_logic;
+	clock, mode, is_input, op_signal, reset_i, enable_contador, enable_entradas, enable_saidas: in std_logic;
 
 	x_out, y_out, z_out: out signed(20 downto 0);
-	end_iteration: out std_logic
+	end_iteration, signal_equal_or_higher_than_zero: out std_logic
 
 );
 end datapath;
@@ -24,64 +24,33 @@ architecture behavior of datapath is
 	signal x_out_mux, y_out_mux, z_out_mux: signed(20 downto 0);
 	signal A,B,C,D,E,AB,CD,CDE,x_ajustado:  signed(20 downto 0);
 	signal y_or_z_mux:                      signed(20 downto 0);
-	signal i:                               unsigned(4 downto 0);
-	signal i_mux:                           unsigned(4 downto 0);
-	signal sum_sub_sig,op_signal:           std_logic;
-
-	-- LUT
-	type lut_array is array (0 to 15) of signed(20 downto 0);
-	constant lut_angles : lut_array := (
-		"000001100100100001111", -- q5.16 arctan(2^0)
-		"000000111011010110001", -- q5.16 arctan(2^-1)
-		"000000011111010110110", -- q5.16 arctan(2^-2)
-		"000000001111111010101", -- q5.16 arctan(2^-3)
-		"000000000111111111010", -- q5.16 arctan(2^-4)
-		"000000000011111111111", -- q5.16 arctan(2^-5)
-		"000000000001111111111", -- q5.16 arctan(2^-6)
-		"000000000000111111111", -- q5.16 arctan(2^-7)
-		"000000000000011111111", -- q5.16 arctan(2^-8)
-		"000000000000001111111", -- q5.16 arctan(2^-9)
-		"000000000000000111111", -- q5.16 arctan(2^-10)
-		"000000000000000011111", -- q5.16 arctan(2^-11)
-		"000000000000000001111", -- q5.16 arctan(2^-12)
-		"000000000000000000111", -- q5.16 arctan(2^-13)
-		"000000000000000000101", -- q5.16 arctan(2^-14)
-		"000000000000000000001"  -- q5.16 arctan(2^-15)
-	);
-
+	signal i:                               std_logic_vector(4 downto 0);
+	signal i_mux:                           std_logic_vector(4 downto 0);
+	signal arctan:                          signed(20 downto 0);   
+	
 begin
 
-	-- contador
-	mux_cont: entity work.mux_2x1
-	generic map(
-		n=>5
-	)
-	port map(
-		zero => i,
-		one  => (others=>'0'),
-		sel  => reset_i,
-		saida => i_mux
-	);
+	-- contador	
 	contador_i: entity work.cont
 	generic map(
 		n=>5
 	)
 	port map(
-		entrada => i_mux,
-		saida   => i
+		clock => clock,
+		enable => enable_contador,
+		reset => reset_i,
+		saida => i
 	);
+	
 	comp_i_16: entity work.comp_unsigned
 	generic map(
 		n=>5
 	)
 	port map(
 		a     => i,
-		b     => to_unsigned(16,5),
+		b     => "10000",
 		saida => end_iteration
 	);
-
-	-- sinal para decider de soma ou subtrai x/y/z
-	sum_sub_sig <= mode xnor op_signal;
 
 	-- decidir se compara x ou y no comparador (>= 0)
 	mux_x_or_y: entity work.mux_2x1
@@ -95,7 +64,7 @@ begin
 		saida => y_or_z_mux
 	);
 
-	-- se y (mode=0) ou z (mode=1) é >= 0
+	-- se y (mode_to_datapath=0) ou z (mode_to_datapath=1) é >= 0
 	comp_y_or_z: entity work.comp_signed
 	generic map(
 		n=>21
@@ -103,7 +72,7 @@ begin
 	port map(
 		a => y_or_z_mux,
 		b => (others=>'0'),
-		saida => op_signal
+		saida => signal_equal_or_higher_than_zero
 	);
 
 	-- 9bits para 21bits
@@ -188,17 +157,17 @@ begin
 	);
 
 	-- x>>i; y>>i
-	desloc_x: entity work.desloc
+	desloc_x: entity work.shift
 	generic map(
 		n=>21,
 		p=>5
 	)
 	port map(
-		valor  => x_reg,
-		desloc => i,
-		saida  => x_shift
+		valor  => x_reg, --unsigned
+		desloc => i, --std_logic_vector
+		saida  => x_shift --unsigned
 	);
-	desloc_y: entity work.desloc
+	desloc_y: entity work.shift
 	generic map(
 		n=>21,
 		p=>5
@@ -218,8 +187,9 @@ begin
 		a => x_reg,
 		b => y_shift,
 		saida => x_calc,
-		sinal => sum_sub_sig
+		sinal => op_signal
 	);
+	
 	op_y: entity work.sum_sub
 	generic map(
 		n=>21
@@ -228,25 +198,35 @@ begin
 		a => y_reg,
 		b => x_shift,
 		saida => y_calc,
-		sinal => not sum_sub_sig
+		sinal => not op_signal
 	);
+	
 	op_z: entity work.sum_sub
 	generic map(
 		n=>21
 	)
 	port map(
 		a => z_reg,
-		b => lut_angles(to_integer(i)),
+		b => arctan,
 		saida => z_calc,
-		sinal => sum_sub_sig
+		sinal => op_signal
 	);
 
-	-- ajustar x para o caso mode=0
-	A <= x_reg sra 1;
-	B <= x_reg sra 3;
-	C <= x_reg sra 6;
-	D <= x_reg sra 9;
-	E <= x_reg sra 12;
+	--LUT
+	rom: entity work.cordic_rom
+   port map(
+        addr => i,  
+        data => arctan   
+   );
+	
+	
+	-- ajustar x para o caso mode_to_datapath=0
+	A <= shift_right(x_reg, 1);
+	B <= shift_right(x_reg, 3);
+	C <= shift_right(x_reg, 6);
+	D <= shift_right(x_reg, 9);
+	E <= shift_right(x_reg, 12);
+	
 	sum_A_B: entity work.sum
 	generic map(
 		n=>21

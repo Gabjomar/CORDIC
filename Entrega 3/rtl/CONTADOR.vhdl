@@ -2,25 +2,25 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity contador_n is
+entity cont is
     generic(
         N : integer := 5   
     );
     port(
-        clk   : in  std_logic;
+        clock   : in  std_logic;
         reset : in  std_logic;  
         enable: in  std_logic;
-        Q     : out std_logic_vector(N-1 downto 0)
+        saida : out std_logic_vector(N-1 downto 0)
     );
 end entity;
 
-architecture Behavioral of contador_n is
+architecture Behavioral of cont is
     signal conta : unsigned(N-1 downto 0) := (others => '0');
 begin
 
-    process(clk)
+    process(clock)
     begin
-        if rising_edge(clk) then
+        if rising_edge(clock) then
             if reset = '1' then
                 conta <= (others => '0');
             elsif enable = '1' then
@@ -29,7 +29,7 @@ begin
         end if;
     end process;
 
-    Q <= std_logic_vector(conta);
+    saida <= std_logic_vector(conta);
 
 end architecture;
 

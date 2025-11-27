@@ -4,7 +4,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity cordic_rom is
     port(
-        addr : in  unsigned(4 downto 0);    
+        addr : in std_logic_vector(4 downto 0);    
         data : out signed(20 downto 0)      
     );
 end entity;
@@ -34,6 +34,6 @@ architecture Behavioral of cordic_rom is
     );
 
 begin
-    data <= tabela(to_integer(addr));
+    data <= tabela(to_integer(unsigned(addr)));
 end architecture;
 

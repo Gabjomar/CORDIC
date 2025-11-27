@@ -2,20 +2,20 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity shift_right_n is
+entity shift is
     generic(
         N : integer := 21;
-        M : integer := 5      
+        P : integer := 5      
     );
     port(
-        x : in  std_logic_vector(N-1 downto 0);
-        i : in  std_logic_vector(M-1 downto 0); 
-        y : out std_logic_vector(N-1 downto 0)
+        valor : in  signed(N-1 downto 0);
+        desloc : in  std_logic_vector(P-1 downto 0); 
+        saida : out signed(N-1 downto 0)
     );
 end entity;
 
-architecture Behavioral of shift_right_n is
+architecture Behavioral of shift is
 begin
-    y <= std_logic_vector(shift_right(unsigned(x), to_integer(unsigned(i))));
+    saida <= signed(shift_right(valor, to_integer(unsigned(desloc))));
 end architecture;
 

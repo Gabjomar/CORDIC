@@ -2,19 +2,19 @@ library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
-entity comparador is
+entity comp_unsigned is
     generic(
         N : integer := 5
     );
     port(
-        A  : in  std_logic_vector(N-1 downto 0);
-        B  : in  std_logic_vector(N-1 downto 0);
-        S : out std_logic               -- S = 1 quando A >= B 
+        A     : in  std_logic_vector(N-1 downto 0);
+        B     : in  std_logic_vector(N-1 downto 0);
+        saida : out std_logic -- S = 1 quando A >= B 
     );
 end entity;
 
-architecture Behavioral of comparador is
+architecture Behavioral of comp_unsigned is
 begin
-    S <= '0' when unsigned(A) < unsigned(B) else '1';
+    saida <= '1' when A = B else '0';
 end architecture;
 
