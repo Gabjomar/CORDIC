@@ -23,7 +23,6 @@ entity cordic_bc is
         enable_contador : out std_logic;
         enable_entradas : out std_logic;
         reset_i : out std_logic;
-        is_x_final : out std_logic;
         is_input : out std_logic;
         mode_to_datapath : out std_logic; -- Vetorização = 0 e Rotação = 1
 
@@ -106,7 +105,6 @@ begin
                 enable_contador <= '0';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0';            
@@ -115,7 +113,6 @@ begin
                 enable_contador <= '1';
                 enable_entradas <= '1';
                 reset_i <= '1';
-                is_x_final <= '0';
                 is_input <= '1';
                 mode_to_datapath <= '0';
                 done <= '0';
@@ -124,7 +121,6 @@ begin
                 enable_contador <= '0';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '1';
                 done <= '0';  
@@ -133,7 +129,6 @@ begin
                 enable_contador <= '1';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '1';
                 done <= '0';  
@@ -142,7 +137,6 @@ begin
                 enable_contador <= '1';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '1';
                 done <= '0';  
@@ -151,7 +145,6 @@ begin
                 enable_contador <= '0';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0';  
@@ -160,7 +153,6 @@ begin
                 enable_contador <= '1';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0';  
@@ -169,7 +161,6 @@ begin
                 enable_contador <= '1';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0';  
@@ -178,7 +169,6 @@ begin
                 enable_contador <= '0';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '1';
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0'; 
@@ -187,7 +177,6 @@ begin
                 enable_contador <= '0';
                 enable_entradas <= '0';
                 reset_i <= '0';
-                is_x_final <= '0';
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '1';  
@@ -195,3 +184,4 @@ begin
     END PROCESS Logica_Saida;
 
 end architecture behavior;
+
