@@ -24,15 +24,16 @@ entity cordic_bc is
         reset_i : out std_logic;
         is_input : out std_logic;
         mode_to_datapath : out std_logic; -- Vetorização = 0 e Rotação = 1
-		  op_signal : out std_logic;
+		op_signal : out std_logic;
 
         done : out std_logic
     );
 end entity cordic_bc;
 
 architecture behavior of cordic_bc is
-	TYPE Tipo_estado IS (S0, S1, S2, S3, S4, S5, S6, S7, S8, S9);
+	TYPE Tipo_estado IS (S0, S1, S2, S3, S4, S5, S6, S7, S9);
 	SIGNAL EstadoAtual, ProximoEstado: Tipo_estado;
+	signal first_iter : std_logic := '0';
 
 begin
 
@@ -49,7 +50,7 @@ begin
 
     -- 2) Lógica de Próximo Estado (LPE)
     -- Define se o circuito está em execução (running) e qual o próximo ciclo
-    Logica_Proximo_Estado: PROCESS(start, EstadoAtual, mode)
+    Logica_Proximo_Estado: PROCESS(all)
     BEGIN
         CASE EstadoAtual IS
             WHEN S0 =>
@@ -77,19 +78,17 @@ begin
             WHEN S4 =>
                 ProximoEstado <= S2;
             WHEN S5 =>
-                IF end_iteration = '1' THEN
-                    ProximoEstado <= S8;
-                ELSIF signal_equal_or_higher_than_zero = '0' THEN
-                    ProximoEstado <= S6;
-                ELSIF signal_equal_or_higher_than_zero = '1' THEN
+                IF end_iteration THEN
+                    ProximoEstado <= S9;
+                ELSIF signal_equal_or_higher_than_zero THEN
                     ProximoEstado <= S7;
+				ELSE
+                    ProximoEstado <= S6;
                 END IF;
             WHEN S6 =>
                 ProximoEstado <= S5;
             WHEN S7 =>
                 ProximoEstado <= S5;
-            WHEN S8 =>
-                ProximoEstado <= S9;
             WHEN S9 =>
                 ProximoEstado <= S0;
         END CASE;
@@ -101,6 +100,8 @@ begin
     BEGIN
         case EstadoAtual is
             when S0 =>
+
+				op_signal <= '-';
                 enable_saidas <= '0';
                 enable_contador <= '0';
                 enable_entradas <= '0';
@@ -108,7 +109,9 @@ begin
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0';
+
             when S1 =>
+				op_signal <= '-';
                 enable_saidas <= '0';
                 enable_contador <= '1';
                 enable_entradas <= '1';
@@ -116,13 +119,10 @@ begin
                 is_input <= '1';
                 mode_to_datapath <= '0';
                 done <= '0';
+
             when S2 =>
 
-				if signal_equal_or_higher_than_zero = '1' then
-				    op_signal <= '0';
-				else
-				    op_signal <= '1';
-				end if;
+				op_signal <= '-';
                 enable_saidas <= '0';
                 enable_contador <= '0';
                 enable_entradas <= '0';
@@ -133,6 +133,7 @@ begin
 
             when S3 =>
 
+				op_signal <= '1';
                 enable_saidas <= '0';
                 enable_contador <= '1';
                 enable_entradas <= '1';
@@ -143,30 +144,29 @@ begin
 
             when S4 =>
 
-                enable_saidas <= '0';
-                enable_contador <= '1';
-                enable_entradas <= '0';
-                reset_i <= '0';
-                is_input <= '0';
-                mode_to_datapath <= '1';
-                done <= '0';
+				op_signal <= '0';
+				enable_saidas <= '0';
+				enable_contador <= '1';
+				enable_entradas <= '1';
+				reset_i <= '0';
+				is_input <= '0';
+				mode_to_datapath <= '1';
+				done <= '0';
 
-				when S5 =>
+			when S5 =>
 
-				if signal_equal_or_higher_than_zero = '1' then
-					 op_signal <= '1';
-				else
-					op_signal <= '0';
-				end if;
-                enable_saidas <= '0';
-                enable_contador <= '0';
-                enable_entradas <= '0';
-                reset_i <= '0';
-                is_input <= '0';
-                mode_to_datapath <= '0';
-                done <= '0';
+				op_signal <= '-';
+				enable_saidas <= '0';
+				enable_contador <= '0';
+				enable_entradas <= '0';
+				reset_i <= '0';
+				is_input <= '0';
+				mode_to_datapath <= '0';
+				done <= '0';
 
             when S6 =>
+
+				op_signal <= '0';
                 enable_saidas <= '0';
                 enable_contador <= '1';
                 enable_entradas <= '1';
@@ -174,8 +174,10 @@ begin
                 is_input <= '0';
                 mode_to_datapath <= '0';
                 done <= '0';
+
             when S7 =>
 
+				op_signal <= '1';
                 enable_saidas <= '0';
                 enable_contador <= '1';
                 enable_entradas <= '1';
@@ -184,22 +186,17 @@ begin
                 mode_to_datapath <= '0';
                 done <= '0';
 
-            when S8 =>
-                enable_saidas <= '0';
-                enable_contador <= '0';
-                enable_entradas <= '0';
-                reset_i <= '0';
-                is_input <= '0';
-                mode_to_datapath <= '0';
-                done <= '0';
             when S9 =>
+
+				op_signal <= '-';
                 enable_saidas <= '1';
                 enable_contador <= '0';
                 enable_entradas <= '0';
                 reset_i <= '0';
                 is_input <= '0';
-                mode_to_datapath <= '0';
+                mode_to_datapath <= mode;
                 done <= '1';
+
         end case;
     END PROCESS Logica_Saida;
 

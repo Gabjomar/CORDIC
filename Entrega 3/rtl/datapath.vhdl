@@ -24,13 +24,14 @@ architecture behavior of datapath is
 	signal x_out_mux, y_out_mux, z_out_mux: signed(20 downto 0);
 	signal A,B,C,D,E,AB,CD,CDE,x_ajustado:  signed(20 downto 0);
 	signal y_or_z_mux:                      signed(20 downto 0);
+	signal x_mux_q516_input_or_constant:    signed(20 downto 0);
+	signal arctan:                          signed(20 downto 0);
 	signal i:                               std_logic_vector(4 downto 0);
 	signal i_mux:                           std_logic_vector(4 downto 0);
-	signal arctan:                          signed(20 downto 0);   
-	
+
 begin
 
-	-- contador	
+	-- contador
 	contador_i: entity work.cont
 	generic map(
 		n=>5
@@ -41,7 +42,7 @@ begin
 		reset => reset_i,
 		saida => i
 	);
-	
+
 	comp_i_16: entity work.comp_unsigned
 	generic map(
 		n=>5
@@ -103,6 +104,17 @@ begin
 		sel   => is_input,
 		saida => x_mux
 	);
+	mux_x_q516_input_or_constant: entity work.mux_2x1
+	generic map(
+		n=>21
+	)
+	port map(
+		zero  => "000001001101101110100",
+		one   => x_mux,
+		sel   => not mode,
+		saida => x_mux_q516_input_or_constant
+	);
+
 	mux_y_in_or_not: entity work.mux_2x1
 	generic map(
 		n=>21
@@ -130,7 +142,7 @@ begin
 		n=>21
 	)
 	port map(
-		entrada => x_mux,
+		entrada => x_mux_q516_input_or_constant,
 		saida   => x_reg,
 		clock   => clock,
 		enable  => enable_entradas
@@ -189,7 +201,7 @@ begin
 		saida => x_calc,
 		sinal => op_signal
 	);
-	
+
 	op_y: entity work.sum_sub
 	generic map(
 		n=>21
@@ -200,7 +212,7 @@ begin
 		saida => y_calc,
 		sinal => not op_signal
 	);
-	
+
 	op_z: entity work.sum_sub
 	generic map(
 		n=>21
@@ -215,18 +227,18 @@ begin
 	--LUT
 	rom: entity work.cordic_rom
    port map(
-        addr => i,  
-        data => arctan   
+        addr => i,
+        data => arctan
    );
-	
-	
+
+
 	-- ajustar x para o caso mode_to_datapath=0
 	A <= shift_right(x_reg, 1);
 	B <= shift_right(x_reg, 3);
 	C <= shift_right(x_reg, 6);
 	D <= shift_right(x_reg, 9);
 	E <= shift_right(x_reg, 12);
-	
+
 	sum_A_B: entity work.sum
 	generic map(
 		n=>21
