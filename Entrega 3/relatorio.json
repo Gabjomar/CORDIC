@@ -1,0 +1,29 @@
+{
+    "grupo": {
+        "nome": "02208A-Grupo-C",
+        "alunos": [
+          {"nome": "Lucas Soares Ramos", "matricula": "24103094"},
+          {"nome": "Gabriel João Martins", "matricula": "23100659"},
+	  {"nome": "Nathan Santana Schunk", "matricula": "23102765"},
+          {"nome": "Thiago Ferreira de Castro", "matricula": "24103095"},
+          {"nome": "Luiz Fernando Mina Gonzaga da Silva", "matricula": "25105229"}
+        ]
+    },
+    "quartus": {
+        "os": "Ubuntu (imagem Quartus II)",
+        "versao": "13.0.1 (completar)",
+        "fpga": {
+            "familia": "Cyclone III",
+            "dispositivo": "EP3C5F256C6"
+        }
+    },
+    "utilizacao": {
+        "total combinational functions": 434,
+        "dedicated logic registers": 120,
+        "total pins": 95
+    },
+    "atraso": {
+        "Fmax": 157.65,
+        "unidade": "MHz"
+    }
+}
